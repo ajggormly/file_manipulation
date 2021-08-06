@@ -1,0 +1,19 @@
+{
+  "name": "file_manipulation",
+  "version": "1.0.0",
+  "description": "online text-editor/file-manipulator",
+  "main": "./server/server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ajggormly/file_manipulation.git"
+  },
+  "author": "Andrew Gormly",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ajggormly/file_manipulation/issues"
+  },
+  "homepage": "https://github.com/ajggormly/file_manipulation#readme"
+}
