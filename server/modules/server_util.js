@@ -1,5 +1,7 @@
 module.exports = {
-  mimeType: function mimeType(filePath) {
+
+  mimeType: 
+  function (filePath) {
     const extension = filePath.substring(filePath.lastIndexOf("."));
     switch (extension) {
       case '.js':
@@ -11,6 +13,11 @@ module.exports = {
         return 'image/x-icon';
       case '.css':
         return 'text/css';
+      case '.csv':
+        return 'text/plain';
+      case '.json':
+        return 'application/json';
     }
   }
+
 };
