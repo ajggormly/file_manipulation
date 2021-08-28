@@ -5,7 +5,7 @@ function init() {
 }
 
 function testClientMain() {
-  let testDiv = document.createElement('div');
+  const testDiv = document.createElement('div');
   testDiv.textContent = 'client.js successfully loaded';
   document.body.appendChild(testDiv);
 }
