@@ -2,6 +2,7 @@ import * as File from '../../client/modules/client_file.mjs' // use full path to
 import * as Util from '../../client/modules/client_util.mjs'
 
 let userName = '';
+let fileTree = {};
 
 export
 async function selectUser() {
@@ -28,13 +29,13 @@ function resetUserName() {
 }
 
 function destroyUserNameDivs() {
-  document.querySelector('#userNameContainer').remove(); 
+  document.querySelector('#userNameContainer').remove();
 }
 
 async function initMainPage() {
-  let fileTree = await File.getFileTree(userName);
+  fileTree = await File.getFileTree(userName);
   fileTree = JSON.parse(fileTree);
-  displayFileTree(fileTree);
+  displayFileNode(fileTree);
   createGeneralUIWidgets();
 }
 
@@ -54,47 +55,56 @@ function switchUserDivClicked(event) {
   switchUser();
 }
 
-function displayFileTree(fileTree) {
-  const root = userName;
-  const fileArray = flattenFileTree(fileTree, root);
+function displayFileNode(node) {
   const fileTreeDiv = document.createElement('div');
   fileTreeDiv.id = 'fileTreeDiv';
-  for (const fileName of fileArray) {
-    let fileDisplayString;
-    let slashCount = 0;
-    for (let i = fileName.length; i > 0; i--) {
-      if (fileName[i] === '\\') {
-        slashCount++;
-      }
-      if (slashCount === 2) {
-        fileDisplayString = fileName.substring(i);
-        break;
-      }
-    }
-    if (!fileDisplayString) {
-      fileDisplayString = fileName;
-    }
+  const nodeIsRoot = node.relPath === '\\';
+  if (nodeIsRoot) {
     const fileDiv = document.createElement('div');
-    fileDiv.className = 'fileDiv';
-    fileDiv.textContent = fileDisplayString;
+    classifyFileDiv(fileDiv);
+    fileDiv.textContent = userName + '\\';
+    fileDiv.dataset.expanded = 'false';
+    fileDiv.dataset.children = JSON.stringify(node.children);
+    fileDiv.addEventListener('click', fileDivClicked);
     fileTreeDiv.appendChild(fileDiv);
   }
-  document.body.appendChild(fileTreeDiv); 
+  document.body.appendChild(fileTreeDiv);
 }
 
-function flattenFileTree(fileTree, root) {
-  let fileArray = [];
-  fileArray.push(root + fileTree.relPath);
-  function recursiveFlattenFileTree(fileTree, root, fileArray) {
-    for (const child of fileTree.children) {
-      fileArray.push(root + child.relPath)
-      if (child.children.length > 0) {
-        recursiveFlattenFileTree(child, root, fileArray);
-      }
+function fileDivClicked(event) {
+  if (this.dataset.expanded === 'true') {
+    // have to remove backslashes because they aren't
+    // supported correctly in class name
+    const childrenFileDivs =
+      document.querySelectorAll('.' + this.textContent.replace(/\\/g, ''));
+    childrenFileDivs.forEach(function(childFileDiv) {
+      childFileDiv.remove();
+    });
+    this.dataset.expanded = 'false';
+  }
+  else {
+    const children = JSON.parse(this.dataset.children);
+    for (const child of children) {
+      const fileDiv = document.createElement('div');
+      classifyFileDiv(fileDiv);
+      fileDiv.textContent = child.relPath;
+      fileDiv.dataset.expanded = 'false';
+      fileDiv.dataset.children = JSON.stringify(child.children);
+      // have to remove any backslashes because they aren't
+      // supported correctly in class names
+      fileDiv.classList.add(...this.classList);
+      fileDiv.classList.add(this.textContent.replace(/\\/g, ''));
+      fileDiv.addEventListener('click', fileDivClicked);
+    this.after(fileDiv);
+    }
+    if (children.length > 0) {
+      this.dataset.expanded = 'true';
     }
   }
-  recursiveFlattenFileTree(fileTree, root, fileArray);
-  return(fileArray);
+}
+
+function classifyFileDiv(div) {
+  div.className = 'fileDiv';
 }
 
 function login() {
@@ -108,7 +118,13 @@ function setUserName(name) {
 
 function userNameDivClicked(event) {
   // in future, ask for password here
-  setUserName(event.target.textContent);
+  setUserName(this.textContent);
+  // let sibling = document.createElement('div');
+  // sibling.className = 'userNameDiv';
+  // sibling.textContent = 'sibling';
+  // this.parentNode.insertBefore(sibling, this.nextSibling);
+  // this.after(sibling);
+  // addEventListenersToUserNameDivs();
   login();
 }
 

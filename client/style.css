@@ -9,7 +9,8 @@
   --dialog-top: calc(var(--main-content-top) + 40px);
   
   /* default size settings */
-  --side-bar-width: 200px;
+  --body-width: 770px;
+  --side-bar-width: 300px;
 
   /* default font settings */
   --font-family: sans-serif;
@@ -28,7 +29,7 @@
 }
 
 body {
-  width: 600px;
+  width: var(--body-width);
   height: 100vh;
 }
 
@@ -40,6 +41,7 @@ body {
 }
 
 .userNameDiv:hover,
+.fileDiv:hover,
 #switchUserDiv:hover {
   cursor: pointer;
   color: rgb(0, 200, 0);

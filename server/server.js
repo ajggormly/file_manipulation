@@ -49,7 +49,7 @@ server.listen(port);
 console.log(`Listening on port ${port}`);
  
 async function respondWithFileTree(userName, response) {
-  const createFileTree = async function(rootFullPath) {
+ async function createFileTree(rootFullPath) {
     const root = {
       relPath: '\\',
       children: []
