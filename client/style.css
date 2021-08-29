@@ -5,6 +5,7 @@
   --content-right: 0vw;
   --content-left: 10px;
   --main-content-top: 60px;
+  --main-content-bottom: 0px;
   --dialog-left: calc(var(--content-left) + 60px);
   --dialog-top: calc(var(--main-content-top) + 40px);
   
@@ -26,6 +27,7 @@
   font-size: var(--main-content-font-size);
   background-color: black;
   color: rgb(0, 150, 0);
+  white-space: nowrap;
 }
 
 body {
@@ -73,12 +75,12 @@ body {
 
 #fileTreeDiv {
   top: var(--main-content-top);
-  bottom: 0px;
+  bottom: var(--main-content-bottom);
   left: var(--content-left);
   width: var(--side-bar-width);
   overflow: auto;
 }
 
 .fileDiv {
-  position: static;
+  position: relative;
 }

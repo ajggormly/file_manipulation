@@ -1,8 +1,12 @@
-import * as File from '../../client/modules/client_file.mjs' // use full path to make server code happy
+// use full path to make server code happy
+import * as File from '../../client/modules/client_file.mjs' 
 import * as Util from '../../client/modules/client_util.mjs'
 
 let userName = '';
 let fileTree = {};
+const expandSymbol = '⮞';
+const collapseSymbol = '⮟';
+const fileTreeIndentionInt = 15;
 
 export
 async function selectUser() {
@@ -35,7 +39,7 @@ function destroyUserNameDivs() {
 async function initMainPage() {
   fileTree = await File.getFileTree(userName);
   fileTree = JSON.parse(fileTree);
-  displayFileNode(fileTree);
+  displayRootNode(fileTree);
   createGeneralUIWidgets();
 }
 
@@ -55,50 +59,65 @@ function switchUserDivClicked(event) {
   switchUser();
 }
 
-function displayFileNode(node) {
+function displayRootNode(rootNode) {
   const fileTreeDiv = document.createElement('div');
   fileTreeDiv.id = 'fileTreeDiv';
-  const nodeIsRoot = node.relPath === '\\';
-  if (nodeIsRoot) {
-    const fileDiv = document.createElement('div');
-    classifyFileDiv(fileDiv);
-    fileDiv.textContent = userName + '\\';
-    fileDiv.dataset.expanded = 'false';
-    fileDiv.dataset.children = JSON.stringify(node.children);
-    fileDiv.addEventListener('click', fileDivClicked);
-    fileTreeDiv.appendChild(fileDiv);
-  }
+  const fileDiv = document.createElement('div');
+  classifyFileDiv(fileDiv);
+  fileDiv.textContent = expandSymbol + ' ' + userName;
+  fileDiv.dataset.expanded = 'false';
+  fileDiv.dataset.children = JSON.stringify(rootNode.children);
+  fileDiv.dataset.root = 'true';
+  fileDiv.addEventListener('click', fileDivClicked);
+  fileTreeDiv.appendChild(fileDiv);
   document.body.appendChild(fileTreeDiv);
+}
+
+// have to remove backslashes because they aren't
+// supported correctly in class name
+// also remove symbols that are added to directories
+function cleanFileDivString(fileDivString) {
+  // not sure why four backslashes are needed with the global tag
+  // should only be two but... idk it needs four to work
+  const cleanRegExp = new RegExp('[\\\\ ' + expandSymbol + collapseSymbol + ']', 'g');
+  return fileDivString.replace(cleanRegExp, '')
 }
 
 function fileDivClicked(event) {
   if (this.dataset.expanded === 'true') {
-    // have to remove backslashes because they aren't
-    // supported correctly in class name
     const childrenFileDivs =
-      document.querySelectorAll('.' + this.textContent.replace(/\\/g, ''));
+      document.querySelectorAll('.' + cleanFileDivString(this.textContent));
     childrenFileDivs.forEach(function(childFileDiv) {
       childFileDiv.remove();
     });
     this.dataset.expanded = 'false';
+    this.textContent = expandSymbol + ' ' + this.textContent.slice(1);
   }
   else {
     const children = JSON.parse(this.dataset.children);
     for (const child of children) {
       const fileDiv = document.createElement('div');
       classifyFileDiv(fileDiv);
-      fileDiv.textContent = child.relPath;
-      fileDiv.dataset.expanded = 'false';
+      fileDiv.textContent = child.relPath.substring(child.relPath.lastIndexOf('\\'));
+      fileDiv.dataset.relPath = child.relPath;
+      if (child.children.length > 0) {
+        fileDiv.dataset.expanded = 'false';
+        fileDiv.textContent = expandSymbol + ' ' + fileDiv.textContent;
+      }
       fileDiv.dataset.children = JSON.stringify(child.children);
-      // have to remove any backslashes because they aren't
-      // supported correctly in class names
       fileDiv.classList.add(...this.classList);
-      fileDiv.classList.add(this.textContent.replace(/\\/g, ''));
+      fileDiv.classList.add(cleanFileDivString(this.textContent));
       fileDiv.addEventListener('click', fileDivClicked);
-    this.after(fileDiv);
+      let currentIndention = this.style.left.replace(/[^0-9.]/g, '');
+      if (currentIndention === '') {
+        currentIndention = 0;
+      }
+      fileDiv.style.left = (parseInt(currentIndention) + fileTreeIndentionInt) + 'px';
+      this.after(fileDiv);
     }
     if (children.length > 0) {
       this.dataset.expanded = 'true';
+      this.textContent = collapseSymbol + ' ' + this.textContent.slice(1);
     }
   }
 }
@@ -119,12 +138,6 @@ function setUserName(name) {
 function userNameDivClicked(event) {
   // in future, ask for password here
   setUserName(this.textContent);
-  // let sibling = document.createElement('div');
-  // sibling.className = 'userNameDiv';
-  // sibling.textContent = 'sibling';
-  // this.parentNode.insertBefore(sibling, this.nextSibling);
-  // this.after(sibling);
-  // addEventListenersToUserNameDivs();
   login();
 }
 

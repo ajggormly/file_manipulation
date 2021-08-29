@@ -1,10 +1,10 @@
-const Http = require('http');
+const http = require('http');
 const Fs = require('fs');
 const fsp = require('fs/promises');
 const port = process.env.PORT || 3000;
 const path = require('path');
 const util = require('./modules/server_util.js')
-const server = Http.createServer(function(request, response) {
+const server = http.createServer(function(request, response) {
   console.log(`${request.method} ${request.url}`)
   if (request.method === 'GET') {
     let filePath = '';
