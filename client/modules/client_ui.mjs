@@ -4,9 +4,12 @@ import * as Util from '../../client/modules/client_util.mjs'
 
 let userName = '';
 let fileTree = {};
-const expandSymbol = '⮞';
-const collapseSymbol = '⮟';
-const fileTreeIndentionInt = 15;
+const expandSymbol = '+'; 
+const collapseSymbol = '-'; 
+const fileSymbol = '\uD83D\uDCDC';
+const closedFolderSymbol = '\uD83D\uDCC1';
+const openedFolderSymbol = '\uD83D\uDCC2'
+const fileTreeIndentionInt = 10;
 
 export
 async function selectUser() {
@@ -64,7 +67,7 @@ function displayRootNode(rootNode) {
   fileTreeDiv.id = 'fileTreeDiv';
   const fileDiv = document.createElement('div');
   classifyFileDiv(fileDiv);
-  fileDiv.textContent = expandSymbol + ' ' + userName;
+  fileDiv.textContent = expandSymbol + ' ' + userName + ' ' + closedFolderSymbol;
   fileDiv.dataset.expanded = 'false';
   fileDiv.dataset.children = JSON.stringify(rootNode.children);
   fileDiv.dataset.root = 'true';
@@ -73,17 +76,16 @@ function displayRootNode(rootNode) {
   document.body.appendChild(fileTreeDiv);
 }
 
-// have to remove backslashes because they aren't
-// supported correctly in class name
-// also remove symbols that are added to directories
+// remove any symbols from the string
+// such as backslash in the path name
+// or symbols added
 function cleanFileDivString(fileDivString) {
-  // not sure why four backslashes are needed with the global tag
-  // should only be two but... idk it needs four to work
-  const cleanRegExp = new RegExp('[\\\\ ' + expandSymbol + collapseSymbol + ']', 'g');
-  return fileDivString.replace(cleanRegExp, '')
+  const cleanRegExp = new RegExp('[^a-zA-Z0-9]', 'g');
+  return fileDivString.replace(cleanRegExp, '');
 }
 
 function fileDivClicked(event) {
+  const cleanedFileString = cleanFileDivString(this.textContent);
   if (this.dataset.expanded === 'true') {
     const childrenFileDivs =
       document.querySelectorAll('.' + cleanFileDivString(this.textContent));
@@ -91,22 +93,25 @@ function fileDivClicked(event) {
       childFileDiv.remove();
     });
     this.dataset.expanded = 'false';
-    this.textContent = expandSymbol + ' ' + this.textContent.slice(1);
+    this.textContent = expandSymbol + ' ' + cleanedFileString + ' ' + closedFolderSymbol;
   }
   else {
     const children = JSON.parse(this.dataset.children);
     for (const child of children) {
       const fileDiv = document.createElement('div');
       classifyFileDiv(fileDiv);
-      fileDiv.textContent = child.relPath.substring(child.relPath.lastIndexOf('\\'));
+      fileDiv.textContent = child.relPath.substring(1 + child.relPath.lastIndexOf('\\'));
       fileDiv.dataset.relPath = child.relPath;
       if (child.children.length > 0) {
         fileDiv.dataset.expanded = 'false';
-        fileDiv.textContent = expandSymbol + ' ' + fileDiv.textContent;
+        fileDiv.textContent = expandSymbol + ' ' + fileDiv.textContent + ' ' + openedFolderSymbol;
+      }
+      else {
+        fileDiv.textContent = fileDiv.textContent + ' ' + fileSymbol;
       }
       fileDiv.dataset.children = JSON.stringify(child.children);
       fileDiv.classList.add(...this.classList);
-      fileDiv.classList.add(cleanFileDivString(this.textContent));
+      fileDiv.classList.add(cleanedFileString);
       fileDiv.addEventListener('click', fileDivClicked);
       let currentIndention = this.style.left.replace(/[^0-9.]/g, '');
       if (currentIndention === '') {
@@ -117,7 +122,7 @@ function fileDivClicked(event) {
     }
     if (children.length > 0) {
       this.dataset.expanded = 'true';
-      this.textContent = collapseSymbol + ' ' + this.textContent.slice(1);
+      this.textContent = collapseSymbol + ' ' + cleanedFileString + ' ' + openedFolderSymbol;
     }
   }
 }

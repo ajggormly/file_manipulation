@@ -10,7 +10,7 @@
   --dialog-top: calc(var(--main-content-top) + 40px);
   
   /* default size settings */
-  --body-width: 770px;
+  --body-width: 520px;
   --side-bar-width: 300px;
 
   /* default font settings */
