@@ -5,13 +5,14 @@
   --content-right: 0vw;
   --content-left: 10px;
   --main-content-top: 60px;
-  --main-content-bottom: 0px;
+  --main-content-bottom: 40px;
   --dialog-left: calc(var(--content-left) + 60px);
   --dialog-top: calc(var(--main-content-top) + 40px);
+  --editor-left: 210px;
   
   /* default size settings */
   --body-width: 520px;
-  --side-bar-width: 300px;
+  --side-bar-width: calc(var(--editor-left) - 20px);
 
   /* default font settings */
   --font-family: sans-serif;
@@ -83,4 +84,13 @@ body {
 
 .fileDiv {
   position: relative;
+}
+
+#fileEditorDiv {
+  top: var(--main-content-top);
+  left: var(--editor-left);
+  right: var(--content-right);
+  bottom: var(--main-content-bottom);
+  overflow-y: auto;
+  background-color: rgb(35, 35, 46);
 }

@@ -7,8 +7,8 @@ let fileTree = {};
 const expandSymbol = '+'; 
 const collapseSymbol = '-'; 
 const fileSymbol = '\uD83D\uDCDC';
-const closedFolderSymbol = '\uD83D\uDCC1';
-const openedFolderSymbol = '\uD83D\uDCC2'
+const collapsedFolderSymbol = '\uD83D\uDCC1';
+const expandedFolderSymbol = '\uD83D\uDCC2'
 const fileTreeIndentionInt = 10;
 
 export
@@ -67,7 +67,7 @@ function displayRootNode(rootNode) {
   fileTreeDiv.id = 'fileTreeDiv';
   const fileDiv = document.createElement('div');
   classifyFileDiv(fileDiv);
-  fileDiv.textContent = expandSymbol + ' ' + userName + ' ' + closedFolderSymbol;
+  fileDiv.textContent = expandSymbol + ' ' + userName + ' ' + collapsedFolderSymbol;
   fileDiv.dataset.expanded = 'false';
   fileDiv.dataset.children = JSON.stringify(rootNode.children);
   fileDiv.dataset.root = 'true';
@@ -84,51 +84,125 @@ function cleanFileDivString(fileDivString) {
   return fileDivString.replace(cleanRegExp, '');
 }
 
-function fileDivClicked(event) {
-  const cleanedFileString = cleanFileDivString(this.textContent);
-  if (this.dataset.expanded === 'true') {
-    const childrenFileDivs =
-      document.querySelectorAll('.' + cleanFileDivString(this.textContent));
-    childrenFileDivs.forEach(function(childFileDiv) {
-      childFileDiv.remove();
-    });
-    this.dataset.expanded = 'false';
-    this.textContent = expandSymbol + ' ' + cleanedFileString + ' ' + closedFolderSymbol;
+function destroyFolderChildren(folder) {
+  const childrenFileDivs =
+  document.querySelectorAll('.' + cleanFileDivString(folder.textContent));
+  childrenFileDivs.forEach(function(childFileDiv) {
+    childFileDiv.remove();
+  });
+}
+
+function collapseFolder(folder, cleanedFileString) {
+  destroyFolderChildren(folder);
+  folder.textContent = expandSymbol + ' ' + cleanedFileString + ' ' + collapsedFolderSymbol;
+  folder.dataset.expanded = 'false';
+}
+
+function initFolder(fileDiv) {
+  fileDiv.textContent = expandSymbol + ' ' + fileDiv.textContent + ' ' + expandedFolderSymbol;
+  fileDiv.dataset.expanded = 'false';
+}
+
+function initFile(fileDiv) {
+  fileDiv.textContent = fileDiv.textContent + ' ' + fileSymbol;
+}
+
+function nameFileDiv(fileDiv, fileObject) {
+  fileDiv.textContent = 
+  fileObject.relPath.substring(1 + fileObject.relPath.lastIndexOf('\\'));
+}
+
+function addRelPathToFileObject(fileDiv, fileObject) {
+  fileDiv.dataset.relPath = fileObject.relPath;
+}
+
+function addChildrenToFileObject(fileDiv, fileObject) {
+  fileDiv.dataset.children = JSON.stringify(fileObject.children);
+}
+
+function indentFileDiv(fileDiv, parent) {
+  let currentIndention = parent.style.left.replace(/[^0-9.]/g, '');
+  if (currentIndention === '') {
+    currentIndention = 0;
   }
-  else {
-    const children = JSON.parse(this.dataset.children);
-    for (const child of children) {
-      const fileDiv = document.createElement('div');
-      classifyFileDiv(fileDiv);
-      fileDiv.textContent = child.relPath.substring(1 + child.relPath.lastIndexOf('\\'));
-      fileDiv.dataset.relPath = child.relPath;
-      if (child.children.length > 0) {
-        fileDiv.dataset.expanded = 'false';
-        fileDiv.textContent = expandSymbol + ' ' + fileDiv.textContent + ' ' + openedFolderSymbol;
-      }
-      else {
-        fileDiv.textContent = fileDiv.textContent + ' ' + fileSymbol;
-      }
-      fileDiv.dataset.children = JSON.stringify(child.children);
-      fileDiv.classList.add(...this.classList);
-      fileDiv.classList.add(cleanedFileString);
-      fileDiv.addEventListener('click', fileDivClicked);
-      let currentIndention = this.style.left.replace(/[^0-9.]/g, '');
-      if (currentIndention === '') {
-        currentIndention = 0;
-      }
-      fileDiv.style.left = (parseInt(currentIndention) + fileTreeIndentionInt) + 'px';
-      this.after(fileDiv);
+  fileDiv.style.left = (parseInt(currentIndention) + fileTreeIndentionInt) + 'px';
+}
+
+function createFolderChildren(folder, cleanedFileString, children) {
+  for (const child of children) {
+    const fileDiv = document.createElement('div');
+    nameFileDiv(fileDiv, child);
+    addRelPathToFileObject(fileDiv, child);
+    addChildrenToFileObject(fileDiv, child);
+    if (child.children.length > 0) {
+      initFolder(fileDiv);
     }
-    if (children.length > 0) {
-      this.dataset.expanded = 'true';
-      this.textContent = collapseSymbol + ' ' + cleanedFileString + ' ' + openedFolderSymbol;
+    else {
+      initFile(fileDiv);
     }
+    classifyFileDiv(fileDiv, folder, child, cleanedFileString);
+    fileDiv.addEventListener('click', fileDivClicked);
+    indentFileDiv(fileDiv, folder);
+    folder.after(fileDiv);
   }
 }
 
-function classifyFileDiv(div) {
-  div.className = 'fileDiv';
+function createFileEditorDiv() {
+  const fileEditorDiv = document.createElement('div');
+  fileEditorDiv.id = 'fileEditorDiv';
+  document.body.append(fileEditorDiv);
+}
+
+function destroyFileEditorDiv(fileEditorDiv) {
+  fileEditorDiv.remove();
+}
+
+function displayFile(fileText, fileEditorDiv) {
+  fileEditorDiv.textContent = fileText;
+}
+
+function openFile(fileDiv) {
+  let fileEditorDiv = document.querySelector('#fileEditorDiv');
+  if (fileEditorDiv) {
+    destroyFileEditorDiv(fileEditorDiv);
+  }
+  createFileEditorDiv();
+  fileEditorDiv = document.querySelector('#fileEditorDiv'); 
+  const fileName = cleanFileDivString(fileDiv.textContent);
+  const fileText = fileName; // fetchFileFromServer();
+  displayFile(fileText, fileEditorDiv);
+}
+
+function expandFolder(folder, cleanedFileString, children) {
+  createFolderChildren(folder, cleanedFileString, children);
+  folder.textContent = collapseSymbol + ' ' + cleanedFileString + ' ' + expandedFolderSymbol;
+  folder.dataset.expanded = 'true';
+}
+
+function fileDivClicked(event) {
+  const cleanedFileString = cleanFileDivString(this.textContent);
+  const children = JSON.parse(this.dataset.children);
+  if (children.length > 0) {
+    if (this.dataset.expanded === 'true') {
+      collapseFolder(this, cleanedFileString);
+    }
+    else {  
+      expandFolder(this, cleanedFileString, children);
+    }
+  }
+  else {
+    openFile(this);
+  }
+}
+
+function classifyFileDiv(fileDiv, parent = null, fileObject = null, cleanedFileString = null) {
+  fileDiv.className = 'fileDiv';
+  if (fileObject) {
+    fileDiv.classList.add(...parent.classList);
+  }
+  if (cleanedFileString) {
+    fileDiv.classList.add(cleanedFileString);
+  }
 }
 
 function login() {
