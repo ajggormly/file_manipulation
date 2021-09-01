@@ -16,7 +16,7 @@ module.exports = {
       case '/txt':
         return 'text/plain';
       default:
-          return 'text/plain';
+        return 'text/plain';
     }
   }
 };

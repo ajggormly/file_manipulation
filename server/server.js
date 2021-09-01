@@ -44,6 +44,9 @@ const server = http.createServer(function(request, response) {
         const filePathPrepend = '/file';
         filePath = path.join(__dirname, '..', 'public', 'users',
                               request.url.slice(filePathPrepend.length + 1));
+        // remove url encoding from filePath
+        filePath = decodeURIComponent(filePath);
+        console.log(filePath);
         respondWithFile(filePath, response);
         break;
       default:
@@ -120,13 +123,12 @@ async function respondWithUserNames(response) {
 
 function respondWithFile(filePath, response) {
   filePath = path.normalize(filePath);
-  console.log(filePath);
   response.setHeader('Content-Type', util.mimeType(filePath));
   const readStream = Fs.createReadStream(filePath);
   readStream.on('open', function() {
     readStream.pipe(response);
   });
   readStream.on('error', function(err) {
-    response.end(err);
+    response.end('file could not be opened');
   });
 }
