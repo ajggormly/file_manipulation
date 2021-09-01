@@ -13,6 +13,10 @@ module.exports = {
         return 'image/x-icon';
       case '.css':
         return 'text/css';
+      case '/txt':
+        return 'text/plain';
+      default:
+          return 'text/plain';
     }
   }
 };
