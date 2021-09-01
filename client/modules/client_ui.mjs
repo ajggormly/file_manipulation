@@ -161,15 +161,15 @@ function displayFile(fileText, fileEditorDiv) {
   fileEditorDiv.textContent = fileText;
 }
 
-function openFile(fileDiv) {
+async function openFile(fileDiv) {
   let fileEditorDiv = document.querySelector('#fileEditorDiv');
   if (fileEditorDiv) {
     destroyFileEditorDiv(fileEditorDiv);
   }
   createFileEditorDiv();
   fileEditorDiv = document.querySelector('#fileEditorDiv'); 
-  const fileName = cleanFileDivString(fileDiv.textContent);
-  const fileText = fileName; // fetchFileFromServer();
+  const fullFilePath = `${userName}/${fileDiv.dataset.relPath}`;
+  const fileText = await File.getFile(fullFilePath);
   displayFile(fileText, fileEditorDiv);
 }
 

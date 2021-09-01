@@ -21,3 +21,20 @@ async function getFileTree(userName) {
     console.log(err);
   }
 }
+
+export
+async function getFile(filePath) {
+  try {
+    const response = await fetch(`file/${filePath}`, {
+      method: 'GET'
+    });
+    if (!response.ok) {
+      throw new Error(`HTTP error ${response.status}`);
+    }
+    const file = await response.text();
+    return file;
+  }
+  catch(err) {
+    console.log(err);
+  }
+}

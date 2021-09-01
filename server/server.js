@@ -31,12 +31,20 @@ const server = http.createServer(function(request, response) {
         respondWithUserNames(response);
         break;
       case (request.url === '/style.css'):
-        filePath = path.join(__dirname, '..', 'client', 'style.css')
+        filePath = path.join(__dirname, '..', 'client', 'style.css');
         respondWithFile(filePath, response);
         break;
+        // todo add security check for if correct
+        // user is logged in for resource being requested
       case (request.url.match(/^\/fileTree\/.+/) !== null):
         let userName = request.url.substring(request.url.lastIndexOf('/'));
         respondWithFileTree(userName, response);
+        break;
+      case (request.url.match(/^\/file\/*/) !== null):
+        const filePathPrepend = '/file';
+        filePath = path.join(__dirname, '..', 'public', 'users',
+                              request.url.slice(filePathPrepend.length + 1));
+        respondWithFile(filePath, response);
         break;
       default:
         response.setStatus = 404;
@@ -112,6 +120,7 @@ async function respondWithUserNames(response) {
 
 function respondWithFile(filePath, response) {
   filePath = path.normalize(filePath);
+  console.log(filePath);
   response.setHeader('Content-Type', util.mimeType(filePath));
   const readStream = Fs.createReadStream(filePath);
   readStream.on('open', function() {
