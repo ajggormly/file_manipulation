@@ -94,4 +94,5 @@ body {
   overflow-y: auto;
   background-color: rgb(35, 35, 46);
   white-space: pre;
+  edit: true;
 }

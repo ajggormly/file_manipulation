@@ -4,7 +4,7 @@
   "description": "online text-editor/file-manipulator",
   "main": "./server/server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "server/server.js"
   },
   "repository": {
     "type": "git",
