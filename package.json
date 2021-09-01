@@ -4,7 +4,7 @@
   "description": "online text-editor/file-manipulator",
   "main": "./server/server.js",
   "scripts": {
-    "start": "server/server.js"
+    "start": "node server/server.js"
   },
   "repository": {
     "type": "git",
