@@ -6,6 +6,7 @@ const path = require('path');
 const util = require('./modules/server_util.js')
 const server = http.createServer(function(request, response) {
   console.log(`${request.method} ${request.url}`)
+  console.log(`__dirname is ${__dirname}`);
   if (request.method === 'GET') {
     let filePath = '';
     switch (true) {
