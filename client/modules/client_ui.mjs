@@ -80,7 +80,7 @@ function displayRootNode(rootNode) {
 // such as backslash in the path name
 // or symbols added
 function cleanFileDivString(fileDivString) {
-  const cleanRegExp = new RegExp('[^a-zA-Z0-9]', 'g');
+  const cleanRegExp = new RegExp('[^a-zA-Z0-9_-]', 'g');
   return fileDivString.replace(cleanRegExp, '');
 }
 
@@ -108,8 +108,16 @@ function initFile(fileDiv) {
 }
 
 function nameFileDiv(fileDiv, fileObject) {
-  fileDiv.textContent = 
-  fileObject.relPath.substring(1 + fileObject.relPath.lastIndexOf('\\'));
+  // windows path
+  if (fileObject.relPath.lastIndexOf('\\') > 0) {
+    fileDiv.textContent = 
+      fileObject.relPath.substring(1 + fileObject.relPath.lastIndexOf('\\'));
+  }
+  // unix like path
+  else {
+    fileDiv.textContent = 
+      fileObject.relPath.substring(1 + fileObject.relPath.lastIndexOf('/'));
+  }
 }
 
 function addRelPathToFileObject(fileDiv, fileObject) {
