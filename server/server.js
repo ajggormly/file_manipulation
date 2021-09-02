@@ -63,7 +63,7 @@ console.log(`Listening on port ${port}`);
 async function respondWithFileTree(userName, response) {
  async function createFileTree(rootFullPath) {
     const root = {
-      relPath: '\\',
+      relPath: path.sep,
       children: []
     };
     async function createFileTreeRecursive(tree, rootFullPath) {
